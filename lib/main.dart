@@ -16,6 +16,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   dynamic jwt;
+  String uri = "https://todo-backend-cyan.vercel.app/";
 
   void setUserJwt(String jwt) {
     setState(() {

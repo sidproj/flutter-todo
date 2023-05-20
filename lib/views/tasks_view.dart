@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:helloworld/components/task_widget.dart';
 
 class TaskView extends StatefulWidget {
-  final jwt;
+  final String jwt;
   final void Function(String) setUserJwt;
   const TaskView({super.key, required this.jwt, required this.setUserJwt});
 
@@ -17,13 +17,14 @@ class _TaskViewState extends State<TaskView> {
   late final TextEditingController _task;
   Profile? _profile;
   bool completed = false;
+  double height = 800;
 
   @override
   void initState() {
     super.initState();
     _task = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      getTaskData();
+      getTaskData(false);
       getProfile();
     });
   }
@@ -47,26 +48,28 @@ class _TaskViewState extends State<TaskView> {
   }
 
   void getProfile() async {
-    final response =
-        await http.post(Uri.parse("http://10.200.2.40:3100/profile"),
-            headers: <String, String>{
-              'Content-Type': "application/json",
-            },
-            body: jsonEncode(<String, String>{"jwt": widget.jwt}));
+    final response = await http.post(
+        Uri.parse("https://todo-backend-cyan.vercel.app/profile"),
+        headers: <String, String>{
+          'Content-Type': "application/json",
+        },
+        body: jsonEncode(<String, String>{"jwt": widget.jwt}));
     setState(() {
       _profile = Profile.fromJson(jsonDecode(response.body));
     });
   }
 
-  void getTaskData() async {
-    final response = await http.post(Uri.parse("http://10.200.2.40:3100/tasks"),
-        headers: <String, String>{
-          'Content-Type': "application/json",
-        },
-        body: jsonEncode(<String, String>{"jwt": widget.jwt}));
+  void getTaskData(bool change) async {
+    final response =
+        await http.post(Uri.parse("https://todo-backend-cyan.vercel.app/tasks"),
+            headers: <String, String>{
+              'Content-Type': "application/json",
+            },
+            body: jsonEncode(<String, String>{"jwt": widget.jwt}));
     final body = TasksResponse.fromJson(jsonDecode(response.body));
     updateTask(body);
-    displayTasks();
+    changeCompleted(change);
+    // displayTasks();
   }
 
   String profileEmail() {
@@ -78,17 +81,19 @@ class _TaskViewState extends State<TaskView> {
   }
 
   void handleAddTask() async {
-    final response =
-        await http.post(Uri.parse("http://10.200.2.40:3100/addTask"),
-            headers: <String, String>{
-              'Content-Type': "application/json",
-            },
-            body: jsonEncode(<String, String>{
-              "jwt": widget.jwt,
-              "task_name": _task.text,
-            }));
-    print(jsonDecode(response.body));
-    getTaskData();
+    String task = _task.text.replaceAll(' ', '');
+    if (task.isEmpty) {
+      return;
+    }
+    await http.post(Uri.parse("https://todo-backend-cyan.vercel.app/addTask"),
+        headers: <String, String>{
+          'Content-Type': "application/json",
+        },
+        body: jsonEncode(<String, String>{
+          "jwt": widget.jwt,
+          "task_name": _task.text,
+        }));
+    getTaskData(false);
   }
 
   void showAddModal() {
@@ -100,20 +105,21 @@ class _TaskViewState extends State<TaskView> {
             bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
           child: SizedBox(
-            height: 300,
+            height: height,
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   const Text(
-                    'New Task',
+                    'New Procrastination',
                     style: TextStyle(
-                        color: Color.fromRGBO(76, 175, 80, 1), fontSize: 20),
+                        color: Color.fromRGBO(76, 175, 80, 1),
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500),
                   ),
                   Container(
                     margin: const EdgeInsets.only(
-                      bottom: 10.0,
                       left: 10.0,
                       right: 10.0,
                       top: 10.0,
@@ -125,7 +131,7 @@ class _TaskViewState extends State<TaskView> {
                       decoration: const InputDecoration(
                         filled: false,
                         fillColor: Color.fromRGBO(76, 175, 80, 1),
-                        hintText: "Enter Email",
+                        hintText: "Task Name",
                         hintStyle: TextStyle(color: Colors.white),
                         border: OutlineInputBorder(),
                       ),
@@ -134,11 +140,9 @@ class _TaskViewState extends State<TaskView> {
                     ),
                   ),
                   ElevatedButton(
-                    style: ButtonStyle(
+                    style: const ButtonStyle(
                       backgroundColor: MaterialStatePropertyAll<Color>(
-                        completed
-                            ? const Color.fromRGBO(51, 51, 51, 1)
-                            : const Color.fromRGBO(76, 175, 80, 1),
+                        Color.fromRGBO(76, 175, 80, 1),
                       ),
                     ),
                     child: const Text(
@@ -170,11 +174,13 @@ class _TaskViewState extends State<TaskView> {
     for (Task task in _taskData?.tasks ?? []) {
       if (task.isCompleted == completed) {
         renderText.add(HandleTask(
-            taskName: task.name,
-            id: task.id,
-            isCompleted: completed,
-            getTasks: getTaskData,
-            jwt: widget.jwt));
+          taskName: task.name,
+          id: task.id,
+          isCompleted: completed,
+          getTasks: getTaskData,
+          jwt: widget.jwt,
+          completed: completed,
+        ));
       }
     }
     if (renderText.isEmpty) {
@@ -206,7 +212,7 @@ class _TaskViewState extends State<TaskView> {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(65, 65, 65, 1),
       appBar: AppBar(
-        title: const Text("Tasks"),
+        title: const Text("Procrastinations"),
         backgroundColor: const Color.fromRGBO(51, 51, 51, 1),
         foregroundColor: Colors.white,
       ),
@@ -253,63 +259,89 @@ class _TaskViewState extends State<TaskView> {
         ),
       ),
       body: Center(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.only(
-                bottom: 10.0,
-                left: 10.0,
-                right: 10.0,
-                top: 10.0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      changeCompleted(false);
-                    },
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStatePropertyAll<Color>(
-                        completed
-                            ? const Color.fromRGBO(51, 51, 51, 1)
-                            : const Color.fromRGBO(76, 175, 80, 1),
+        child: GestureDetector(
+          onVerticalDragUpdate: (details) {
+            if ((details.primaryDelta ?? 0) > 2) {
+              getTaskData(completed);
+              print("Go Down");
+            }
+            print(details.primaryDelta);
+          },
+          onHorizontalDragUpdate: (details) {
+            if ((details.primaryDelta ?? 0) > 20) {
+              changeCompleted(false);
+              print("Go Left");
+            } else if ((details.primaryDelta ?? 0) < -20) {
+              changeCompleted(true);
+              print("Go Right:");
+            }
+            print(details.primaryDelta);
+          },
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.only(
+                  bottom: 10.0,
+                  left: 10.0,
+                  right: 10.0,
+                  top: 10.0,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        changeCompleted(false);
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStatePropertyAll<Color>(
+                          completed
+                              ? const Color.fromRGBO(51, 51, 51, 1)
+                              : const Color.fromRGBO(76, 175, 80, 1),
+                        ),
+                      ),
+                      child: const Text(
+                        "Pending",
+                        style: TextStyle(color: Colors.white),
                       ),
                     ),
-                    child: const Text(
-                      "Pending",
-                      style: TextStyle(color: Colors.white),
+                    const SizedBox(
+                      width: 10,
                     ),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      changeCompleted(true);
-                    },
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStatePropertyAll<Color>(
-                        completed
-                            ? const Color.fromRGBO(76, 175, 80, 1)
-                            : const Color.fromRGBO(51, 51, 51, 1),
+                    ElevatedButton(
+                      onPressed: () {
+                        changeCompleted(true);
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStatePropertyAll<Color>(
+                          completed
+                              ? const Color.fromRGBO(76, 175, 80, 1)
+                              : const Color.fromRGBO(51, 51, 51, 1),
+                        ),
+                      ),
+                      child: const Text(
+                        "Completed",
+                        style: TextStyle(color: Colors.white),
                       ),
                     ),
-                    child: const Text(
-                      "Completed",
-                      style: TextStyle(color: Colors.white),
+                    SizedBox(
+                      width: 140,
+                      height: 40,
+                      child: Container(
+                        decoration: const BoxDecoration(),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.only(bottom: 70),
-                children: displayTasks(),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.only(bottom: 70),
+                  children: displayTasks(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       floatingActionButton: ElevatedButton(
@@ -343,9 +375,7 @@ class TasksResponse {
   }
 
   void displayTasks() {
-    for (var task in tasks ?? []) {
-      print(task.name);
-    }
+    for (var task in tasks ?? []) {}
   }
 }
 

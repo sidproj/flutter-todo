@@ -33,17 +33,28 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void testSend() async {
-    final data = {"email": _email.text, "password": _password.text};
-    print(data);
+    if (_email.text.replaceAll(' ', '').isEmpty) {
+      setState(() {
+        loginView = "Please Enter Email!";
+      });
+      return;
+    }
+    if (_password.text.replaceAll(' ', '').isEmpty) {
+      setState(() {
+        loginView = "Please Enter Password!";
+      });
+      return;
+    }
 
-    final response = await http.post(Uri.parse("http://10.200.2.40:3100/login"),
-        headers: <String, String>{
-          'Content-Type': "application/json",
-        },
-        body: jsonEncode(<String, String>{
-          "email": _email.text,
-          "password": _password.text,
-        }));
+    final response =
+        await http.post(Uri.parse("https://todo-backend-cyan.vercel.app/login"),
+            headers: <String, String>{
+              'Content-Type': "application/json",
+            },
+            body: jsonEncode(<String, String>{
+              "email": _email.text,
+              "password": _password.text,
+            }));
     final body = RegisterResponse.fromJson(jsonDecode(response.body));
     if (body.message == "Login successful!") {
       widget.setUserJwt(body.jwt);
@@ -94,7 +105,6 @@ class _LoginViewState extends State<LoginView> {
           ),
           Container(
             margin: const EdgeInsets.only(
-              bottom: 10.0,
               left: 10.0,
               right: 10.0,
               top: 10.0,
@@ -106,7 +116,7 @@ class _LoginViewState extends State<LoginView> {
               decoration: const InputDecoration(
                 filled: false,
                 fillColor: Color.fromRGBO(76, 175, 80, 1),
-                hintText: "Enter Passowrd",
+                hintText: "Enter Password",
                 hintStyle: TextStyle(color: Colors.white),
                 border: OutlineInputBorder(),
                 focusColor: Color.fromRGBO(76, 175, 80, 1),
@@ -116,14 +126,30 @@ class _LoginViewState extends State<LoginView> {
               autocorrect: false,
             ),
           ),
-          Text(loginView),
-          TextButton(
-            onPressed: testSend,
-            style: const ButtonStyle(
-                backgroundColor: MaterialStatePropertyAll<Color>(
-                    Color.fromRGBO(76, 175, 80, 1)),
-                foregroundColor: MaterialStatePropertyAll<Color>(Colors.white)),
-            child: const Text("Login"),
+          Text(
+            loginView,
+            style: const TextStyle(
+              color: Color.fromRGBO(229, 57, 53, 1),
+              decoration: TextDecoration.underline,
+              decorationColor: Color.fromRGBO(229, 57, 53, 1),
+              decorationThickness: 2,
+              decorationStyle: TextDecorationStyle.solid,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(
+              top: 10.0,
+            ),
+            child: TextButton(
+              onPressed: testSend,
+              style: const ButtonStyle(
+                  backgroundColor: MaterialStatePropertyAll<Color>(
+                      Color.fromRGBO(76, 175, 80, 1)),
+                  foregroundColor:
+                      MaterialStatePropertyAll<Color>(Colors.white)),
+              child: const Text("Login"),
+            ),
           ),
           TextButton(
             onPressed: () {

@@ -9,13 +9,15 @@ class HandleTask extends StatefulWidget {
       required this.id,
       required this.isCompleted,
       required this.getTasks,
-      required this.jwt})
+      required this.jwt,
+      required this.completed})
       : super(key: key);
   final String taskName;
   final String id;
   final bool isCompleted;
   final jwt;
-  final void Function() getTasks;
+  final void Function(bool) getTasks;
+  final bool completed;
 
   @override
   State<HandleTask> createState() => _HandleTaskState();
@@ -25,30 +27,33 @@ class _HandleTaskState extends State<HandleTask> {
   //todo
 
   void handleTaskDelete() async {
-    final response = await http.post(
-        Uri.parse("http://10.200.2.40:3100/deleteTask"),
-        headers: <String, String>{
-          'Content-Type': "application/json",
-        },
-        body: jsonEncode(
-            <String, String>{"jwt": widget.jwt, "task_id": widget.id}));
-    print(jsonDecode(response.body));
-    widget.getTasks();
+    await http.post(
+      Uri.parse("https://todo-backend-cyan.vercel.app/deleteTask"),
+      headers: <String, String>{
+        'Content-Type': "application/json",
+      },
+      body: jsonEncode(
+        <String, String>{"jwt": widget.jwt, "task_id": widget.id},
+      ),
+    );
+    widget.getTasks(true);
   }
 
   void handleTaskComplete() async {
-    final response =
-        await http.post(Uri.parse("http://10.200.2.40:3100/changeStatus"),
-            headers: <String, String>{
-              'Content-Type': "application/json",
-            },
-            body: jsonEncode(<String, dynamic>{
-              "jwt": widget.jwt,
-              "task_id": widget.id,
-              "status": true,
-            }));
-    print(jsonDecode(response.body));
-    widget.getTasks();
+    await http.post(
+      Uri.parse("https://todo-backend-cyan.vercel.app/changeStatus"),
+      headers: <String, String>{
+        'Content-Type': "application/json",
+      },
+      body: jsonEncode(
+        <String, dynamic>{
+          "jwt": widget.jwt,
+          "task_id": widget.id,
+          "status": true,
+        },
+      ),
+    );
+    widget.getTasks(false);
   }
 
   Widget handleCompletedDisplay() {
