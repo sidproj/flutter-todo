@@ -77,6 +77,8 @@ class _TaskViewState extends State<TaskView> {
     return _profile?.fullname ?? "Foo Bar";
   }
 
+  void test() {}
+
   void handleAddTask() async {
     final response =
         await http.post(Uri.parse("http://10.200.2.40:3100/addTask"),
