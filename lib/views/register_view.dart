@@ -90,10 +90,8 @@ class _RegisterViewState extends State<RegisterView> {
         children: [
           Container(
             margin: const EdgeInsets.only(
-              bottom: 10.0,
               left: 10.0,
               right: 10.0,
-              top: 10.0,
             ),
             child: TextField(
               maxLength: 50,
@@ -106,10 +104,8 @@ class _RegisterViewState extends State<RegisterView> {
           ),
           Container(
             margin: const EdgeInsets.only(
-              bottom: 10.0,
               left: 10.0,
               right: 10.0,
-              top: 10.0,
             ),
             child: TextField(
               maxLength: 50,
@@ -206,10 +202,22 @@ class _RegisterViewState extends State<RegisterView> {
               });
             },
             style: const ButtonStyle(
-                backgroundColor: MaterialStatePropertyAll<Color>(
-                    Color.fromRGBO(76, 175, 80, 1)),
-                foregroundColor: MaterialStatePropertyAll<Color>(Colors.white)),
-            child: const Text("Next"),
+              backgroundColor: MaterialStatePropertyAll<Color>(
+                  Color.fromRGBO(76, 175, 80, 1)),
+              foregroundColor: MaterialStatePropertyAll<Color>(Colors.white),
+              padding: MaterialStatePropertyAll(
+                EdgeInsets.only(
+                  left: 30.0,
+                  right: 30.0,
+                ),
+              ),
+            ),
+            child: const Text(
+              "Next",
+              style: TextStyle(
+                fontSize: 20,
+              ),
+            ),
           ),
         ],
       );
@@ -224,10 +232,22 @@ class _RegisterViewState extends State<RegisterView> {
             });
           },
           style: const ButtonStyle(
-              backgroundColor: MaterialStatePropertyAll<Color>(
-                  Color.fromRGBO(76, 175, 80, 1)),
-              foregroundColor: MaterialStatePropertyAll<Color>(Colors.white)),
-          child: const Text("Back"),
+            backgroundColor:
+                MaterialStatePropertyAll<Color>(Color.fromRGBO(41, 41, 41, 1)),
+            foregroundColor: MaterialStatePropertyAll<Color>(Colors.white),
+            padding: MaterialStatePropertyAll(
+              EdgeInsets.only(
+                left: 30.0,
+                right: 30.0,
+              ),
+            ),
+          ),
+          child: const Text(
+            "Back",
+            style: TextStyle(
+              fontSize: 20,
+            ),
+          ),
         ),
         const SizedBox(
           width: 65,
@@ -235,10 +255,22 @@ class _RegisterViewState extends State<RegisterView> {
         TextButton(
           onPressed: testSend,
           style: const ButtonStyle(
-              backgroundColor: MaterialStatePropertyAll<Color>(
-                  Color.fromRGBO(76, 175, 80, 1)),
-              foregroundColor: MaterialStatePropertyAll<Color>(Colors.white)),
-          child: const Text("Register"),
+            backgroundColor:
+                MaterialStatePropertyAll<Color>(Color.fromRGBO(76, 175, 80, 1)),
+            foregroundColor: MaterialStatePropertyAll<Color>(Colors.white),
+            padding: MaterialStatePropertyAll(
+              EdgeInsets.only(
+                left: 30.0,
+                right: 30.0,
+              ),
+            ),
+          ),
+          child: const Text(
+            "Register",
+            style: TextStyle(
+              fontSize: 20,
+            ),
+          ),
         ),
       ],
     );
@@ -248,22 +280,47 @@ class _RegisterViewState extends State<RegisterView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(65, 65, 65, 1),
-      appBar: AppBar(
-        title: const Text("Register"),
-        backgroundColor: const Color.fromRGBO(51, 51, 51, 1),
-        foregroundColor: Colors.white,
-      ),
-      body: Center(
-          child: Column(
-        // mainAxisAlignment: MainAxisAlignment.center,
+      // appBar: AppBar(
+      //   title: const Text("Register"),
+      //   backgroundColor: const Color.fromRGBO(51, 51, 51, 1),
+      //   foregroundColor: Colors.white,
+      // ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          Container(
+            padding: const EdgeInsets.only(left: 15),
+            margin: const EdgeInsets.only(bottom: 0),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Register",
+                  style: TextStyle(
+                    color: Color.fromRGBO(76, 175, 80, 1),
+                    fontSize: 30,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  "Please register to continue.",
+                  style: TextStyle(
+                    color: Color.fromRGBO(76, 175, 80, 1),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
           Column(
             children: [
               const SizedBox(
-                height: 50,
+                height: 30,
               ),
               displayTextFiled(),
-              !error.isEmpty
+              error.isNotEmpty
                   ? Container(
                       margin: const EdgeInsets.only(
                         bottom: 15.0,
@@ -281,27 +338,32 @@ class _RegisterViewState extends State<RegisterView> {
                       ),
                     )
                   : const SizedBox(),
+              displayButtonRow(),
+              Container(
+                margin: const EdgeInsets.only(top: 30),
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.of(context)
+                        .pushNamedAndRemoveUntil('/login', (route) => false);
+                  },
+                  child: RichText(
+                    text: const TextSpan(
+                        text: "Already and account? ",
+                        children: <TextSpan>[
+                          TextSpan(
+                            text: "Login Here.",
+                            style: TextStyle(
+                              color: Color.fromRGBO(76, 175, 80, 1),
+                            ),
+                          ),
+                        ]),
+                  ),
+                ),
+              ),
             ],
           ),
-          displayButtonRow(),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context)
-                  .pushNamedAndRemoveUntil('/login', (route) => false);
-            },
-            child: const Text(
-              "Already Registered? Login Here!",
-              style: TextStyle(
-                color: Color.fromRGBO(76, 175, 80, 1),
-                decoration: TextDecoration.underline,
-                decorationColor: Color.fromRGBO(76, 175, 80, 1),
-                decorationThickness: 2,
-                decorationStyle: TextDecorationStyle.solid,
-              ),
-            ),
-          )
         ],
-      )),
+      ),
     );
   }
 }

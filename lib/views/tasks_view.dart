@@ -60,15 +60,29 @@ class _TaskViewState extends State<TaskView> {
   }
 
   void getTaskData(bool change) async {
-    final response =
-        await http.post(Uri.parse("https://todo-backend-cyan.vercel.app/tasks"),
-            headers: <String, String>{
-              'Content-Type': "application/json",
-            },
-            body: jsonEncode(<String, String>{"jwt": widget.jwt}));
-    final body = TasksResponse.fromJson(jsonDecode(response.body));
-    updateTask(body);
-    changeCompleted(change);
+    try {
+      final response = await http.post(
+        Uri.parse("https://todo-backend-cyan.vercel.app/tasks"),
+        headers: <String, String>{
+          'Content-Type': "application/json",
+        },
+        body: jsonEncode(
+          <String, String>{
+            "jwt": widget.jwt,
+          },
+        ),
+      );
+
+      print(jsonDecode(response.body));
+      final body = TasksResponse.fromJson(jsonDecode(response.body));
+      updateTask(body);
+      changeCompleted(change);
+    } catch (err) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        "/login",
+        (route) => false,
+      );
+    }
     // displayTasks();
   }
 
@@ -213,7 +227,7 @@ class _TaskViewState extends State<TaskView> {
       backgroundColor: const Color.fromRGBO(65, 65, 65, 1),
       appBar: AppBar(
         title: const Text("Procrastinations"),
-        backgroundColor: const Color.fromRGBO(51, 51, 51, 1),
+        backgroundColor: const Color.fromRGBO(65, 65, 65, 1),
         foregroundColor: Colors.white,
       ),
       drawer: Drawer(

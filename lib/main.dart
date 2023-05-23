@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:helloworld/views/login_view.dart';
+import 'package:helloworld/views/splash_view.dart';
 import 'package:helloworld/views/tasks_view.dart';
 import 'package:helloworld/views/register_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const HomePage());
@@ -18,10 +20,23 @@ class _HomePageState extends State<HomePage> {
   dynamic jwt;
   String uri = "https://todo-backend-cyan.vercel.app/";
 
+  late final SharedPreferences prefs;
+
   void setUserJwt(String jwt) {
     setState(() {
       this.jwt = jwt;
+      prefs.setString("jwt", jwt);
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initialize();
+  }
+
+  void initialize() async {
+    prefs = await SharedPreferences.getInstance();
   }
 
   @override
@@ -51,16 +66,19 @@ class _HomePageState extends State<HomePage> {
               borderRadius: BorderRadius.all(Radius.circular(10))),
         ),
       ),
-      home: LoginView(
-        jwt: jwt,
+      home: Splash(
         setUserJwt: setUserJwt,
       ),
+      // home: SwipeView(
+      //   jwt: jwt,
+      //   setUserJwt: setUserJwt,
+      // ),
       routes: {
         "/login": (context) => LoginView(
               jwt: jwt,
               setUserJwt: setUserJwt,
             ),
-        "/register": (context) => RegisterView(),
+        "/register": (context) => const RegisterView(),
         "/tasks": (context) => TaskView(
               jwt: jwt,
               setUserJwt: setUserJwt,
